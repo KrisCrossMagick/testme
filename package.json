@@ -19,5 +19,8 @@
 	"homepage": "https://github.com/KrisCrossMagick/testme#readme",
 	"bin": {
 		"tme": "index.js"
+	},
+	"dependencies": {
+		"chalk": "^4.1.2"
 	}
 }

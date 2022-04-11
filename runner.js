@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const chalk = require('chalk');
 
+//here we add a list of DIRs we do not want to search through
+const forbiddenDirs = [ 'node-modules' ];
 class Runner {
 	constructor() {
 		this.testFiles = [];
@@ -9,6 +12,7 @@ class Runner {
 	async runTests() {
 		for (let file of this.testFiles) {
 			const beforeEaches = [];
+			console.log(chalk.bgBlueBright(`==> Running: ${file.shortName}`));
 			global.beforeEach = (fn) => {
 				beforeEaches.push(fn);
 			};
@@ -19,10 +23,11 @@ class Runner {
 				beforeEaches.forEach((func) => func());
 				try {
 					fn();
-					console.log(`==> OK - ${desc}`);
+					console.log(chalk.green(`\t==> OK - ${desc}`));
 				} catch (err) {
-					console.log(`==> X - ${desc}`);
-					console.log('\t', err.message);
+					const message = err.message.replace(/\n/g, '\n\t\t');
+					console.log(chalk.red(`\t==> X - ${desc}`));
+					console.log(chalk.red('\t', message));
 				}
 			};
 
@@ -31,7 +36,7 @@ class Runner {
 			try {
 				require(file.name);
 			} catch (err) {
-				console.log(err);
+				console.log(chalk.red(err));
 			}
 		}
 	}
@@ -44,9 +49,9 @@ class Runner {
 			const stats = await fs.promises.lstat(filepath);
 
 			if (stats.isFile() && file.includes('.test.js')) {
-				this.testFiles.push({ name: filepath });
+				this.testFiles.push({ name: filepath, shortName: file });
 			}
-			else if (stats.isDirectory()) {
+			else if (stats.isDirectory() && !forbiddenDirs.includes(file)) {
 				const childFiles = await fs.promises.readdir(filepath);
 
 				//childFiles is an array so we need to spread it before adding it
