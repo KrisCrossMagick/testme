@@ -17,12 +17,22 @@ class Runner {
 			//we will define it globally over all files in this project
 			global.it = (desc, fn) => {
 				beforeEaches.forEach((func) => func());
-				fn();
+				try {
+					fn();
+					console.log(`==> OK - ${desc}`);
+				} catch (err) {
+					console.log(`==> X - ${desc}`);
+					console.log('\t', err.message);
+				}
 			};
 
 			//in order to execute the testfile we just need to require it
 			//when we do, node will load the file and execute whatever is inside of it
-			require(file.name);
+			try {
+				require(file.name);
+			} catch (err) {
+				console.log(err);
+			}
 		}
 	}
 
