@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const render = require('./render');
 
 //here we add a list of DIRs we do not want to search through
 const forbiddenDirs = [ 'node-modules' ];
@@ -13,16 +14,17 @@ class Runner {
 		for (let file of this.testFiles) {
 			const beforeEaches = [];
 			console.log(chalk.bgBlueBright(`==> Running: ${file.shortName}`));
+			global.render = render; //this will make the render available everywhere on the CLI as well
 			global.beforeEach = (fn) => {
 				beforeEaches.push(fn);
 			};
 			//before we can call the testfile and execute it
 			//we need to define the "it" function like "mocha" uses
 			//we will define it globally over all files in this project
-			global.it = (desc, fn) => {
+			global.it = async (desc, fn) => {
 				beforeEaches.forEach((func) => func());
 				try {
-					fn();
+					await fn();
 					console.log(chalk.green(`\t==> OK - ${desc}`));
 				} catch (err) {
 					const message = err.message.replace(/\n/g, '\n\t\t');
