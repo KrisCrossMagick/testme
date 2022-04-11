@@ -8,6 +8,18 @@ class Runner {
 
 	async runTests() {
 		for (let file of this.testFiles) {
+			const beforeEaches = [];
+			global.beforeEach = (fn) => {
+				beforeEaches.push(fn);
+			};
+			//before we can call the testfile and execute it
+			//we need to define the "it" function like "mocha" uses
+			//we will define it globally over all files in this project
+			global.it = (desc, fn) => {
+				beforeEaches.forEach((func) => func());
+				fn();
+			};
+
 			//in order to execute the testfile we just need to require it
 			//when we do, node will load the file and execute whatever is inside of it
 			require(file.name);
